@@ -30,6 +30,12 @@ class Vector extends GObject {
     let z = this.z - v.z
     return Vector.new(x, y, z)
   }
+  add(v) {
+    let x = this.x + v.x
+    let y = this.y + v.y
+    let z = this.z + v.z
+    return Vector.new(x, y, z)
+  }
   length() {
     return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z)
   }
