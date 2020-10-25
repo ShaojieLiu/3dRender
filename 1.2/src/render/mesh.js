@@ -9,6 +9,14 @@ class Mesh extends GObject {
     this.vertices = null
     this.indices = null
   }
+  // 在原来的基础上旋转一下
+  rotate(v) {
+    const r = this.rotation.add(v)
+    // const pi = Math.PI
+    // let y = (r.y) % (2 * pi)
+    // y = (y > pi) ? (y - 2 * pi) : y
+    this.rotation = Vector.new(r.x, r.y, r.z)
+  }
   // 返回一个正方体
   static cube() {
     // 8 points

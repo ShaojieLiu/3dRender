@@ -7,8 +7,24 @@ class Canvas extends GObject {
     this.h = canvas.height
   }
 
+  clear() {
+    this.ctx.clearRect(0, 0, this.w, this.h)
+  }
+
+  project(coordVertex, transformMatrix) {
+    const { w, h } = this
+    const [w2, h2] = [w / 2, h / 2]
+    const point = transformMatrix.transform(coordVertex.position)
+    const x = point.x * w2 + w2
+    const y = - point.y * h2 + h2
+    const z = (point.z - 1.1) * 100000
+
+    const v = Vector.new(x, y, z)
+    return Vertex.new(v, this.color)
+  }
+
   drawline(v1, v2, color) {
-    console.log('drawline', v1, v2)
+    // console.log('drawline', v1, v2)
     const ctx = this.ctx
     ctx.beginPath()
     ctx.strokeStyle = color.toRgba()
@@ -18,20 +34,25 @@ class Canvas extends GObject {
     ctx.stroke()
   }
 
-  drawMesh(mesh) {
+  drawMesh(mesh, cameraIndex) {
     const { indices, vertices } = mesh
-    const position = Vector.new(400, 300, 0)
-    let { position, target, up } = cameraIndex ? Camera.new(cameraIndex) : self.camera
+    const { w, h } = this
+
+    let { position, target, up } = Camera.new(cameraIndex || 0)
     const view = Matrix.lookAtLH(position, target, up)
+    const projection = Matrix.perspectiveFovLH(8, w / h, 0.1, 1)
 
     const rotation = Matrix.rotation(mesh.rotation)
-    const translation = Matrix.translation(position)
+    const translation = Matrix.translation(mesh.position)
+    const world = rotation.multiply(translation)
+    const transform = world.multiply(view).multiply(projection)
 
+    console.log('transform', transform, world, rotation, translation)
 
     const color = Color.blue()
     indices.forEach(ind => {
       const [v1, v2, v3] = ind.map(i => {
-        return vertices[i].position.multi_num(30).add(position)
+        return this.project(vertices[i], transform).position
       })
       this.drawline(v1, v2, color)
       this.drawline(v2, v3, color)
