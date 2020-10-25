@@ -10,6 +10,24 @@ class Mesh extends GObject {
     this.indices = null
   }
   // 返回一个正方体
+  //
+  //    v0----- v1
+  //   /|      /|
+  //  v4------v5|
+  //  | |     | |
+  //  | |v2---|-|v3
+  //  |/      |/
+  //  v6------v7
+  //
+  // Coordinates
+  // 右手坐标系
+  //       Y
+  //       |
+  //       |
+  //       O ------ X
+  //      /
+  //    Z
+  //
   static cube() {
     // 8 points
     let points = [
