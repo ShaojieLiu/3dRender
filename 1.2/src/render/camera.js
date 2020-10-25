@@ -21,7 +21,12 @@ class Camera extends GObject {
         this.position = Vector.new(0, 40, -100)
         this.target = Vector.new(0, 0, 0)
         this.up = Vector.new(0, 1, 0)
-      }
+      },
+      3: () => {
+        this.position = Vector.new(0, 0, -5)
+        this.target = Vector.new(0, 0, 0)
+        this.up = Vector.new(0, 1, 0)
+      },
     }
     dict[index || 0]()
   }

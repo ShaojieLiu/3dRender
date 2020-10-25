@@ -20,7 +20,7 @@ class Canvas extends GObject {
 
   drawMesh(mesh) {
     const { indices, vertices } = mesh
-    const position = Vector.new(400, 300, 0)
+    const position = Vector.new(150, 100, 0)
     const color = Color.blue()
     indices.forEach(ind => {
       const [v1, v2, v3] = ind.map(i => {
