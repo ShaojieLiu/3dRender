@@ -39,20 +39,35 @@ class Canvas extends GObject {
     const { w, h } = this
 
     let { position, target, up } = Camera.new(cameraIndex || 0)
-    const view = Matrix.lookAtLH(position, target, up)
-    const projection = Matrix.perspectiveFovLH(8, w / h, 0.1, 1)
 
     const rotation = Matrix.rotation(mesh.rotation)
     const translation = Matrix.translation(mesh.position)
-    const world = rotation.multiply(translation)
-    const transform = world.multiply(view).multiply(projection)
+    const view = Matrix.lookAtLH(position, target, up)
+    const view2 = Matrix.lookAtLH(position, target, Vector.new(1, 1, 0))
+    const projection = Matrix.perspectiveFovLH(8, w / h, 0.1, 1)
 
-    console.log('transform', transform, world, rotation, translation)
+    const world = rotation.multiply(translation)
+    const worldAndView = world.multiply(view)
+    const worldAndView2 = world.multiply(view2)
+    const transform = worldAndView.multiply(projection)
+
+    let t = undefined
+    let needProject = false
+    // needProject = true
+    // t = world
+    // t = worldAndView2
+    // t = transform
+
+    console.log('transform', t)
 
     const color = Color.blue()
     indices.forEach(ind => {
       const [v1, v2, v3] = ind.map(i => {
-        return this.project(vertices[i], transform).position
+        if (needProject) {
+          return this.project(vertices[i], t).position
+        } else {
+          return vertices[i].position
+        }
       })
       this.drawline(v1, v2, color)
       this.drawline(v2, v3, color)
