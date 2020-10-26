@@ -11,7 +11,7 @@ class Canvas extends GObject {
     this.ctx.clearRect(0, 0, this.w, this.h)
   }
 
-  project(coordVertex, transformMatrix) {
+  project(coordVertex, transformMatrix = Matrix.identity()) {
     const { w, h } = this
     const [w2, h2] = [w / 2, h / 2]
     const point = transformMatrix.transform(coordVertex.position)
