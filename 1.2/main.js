@@ -9,10 +9,10 @@ const main = () => {
 
   setInterval(() => {
     canvas.clear()
-    mesh.rotate(new Vector(0.05, 0.1, 0))
+    mesh.rotate(new Vector(0.005, 0.008, 0))
     console.log('r', mesh.rotation)
     canvas.drawMesh(mesh, 3)
-  }, 200)
+  }, 20)
 }
 
 main()
