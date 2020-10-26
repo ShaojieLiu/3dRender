@@ -35,7 +35,7 @@ class Matrix extends GObject {
     return this.new()
   }
   static identity() {
-    m = [
+    const m = [
       1, 0, 0, 0,
       0, 1, 0, 0,
       0, 0, 1, 0,
