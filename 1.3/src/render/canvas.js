@@ -17,7 +17,8 @@ class Canvas extends GObject {
     const point = transformMatrix.transform(coordVertex.position)
     const x = point.x * w2 + w2
     const y = - point.y * h2 + h2
-    const z = (point.z - 1.1) * 100000
+    // const z = (point.z - 1.1) * 100000
+    const z = point.z
 
     const v = Vector.new(x, y, z)
     return Vertex.new(v, this.color)
