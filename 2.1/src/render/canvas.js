@@ -25,14 +25,20 @@ class Canvas extends GObject {
   }
 
   drawline(v1, v2, color) {
+    /**
+     * 改动开始
+     */
     // console.log('drawline', v1, v2)
     const ctx = this.ctx
-    ctx.beginPath()
+    // ctx.beginPath()
     ctx.strokeStyle = color.toRgba()
-    ctx.moveTo(v1.x, v1.y)
+    // ctx.moveTo(v1.x, v1.y)
     ctx.lineTo(v2.x, v2.y)
-    ctx.closePath()
-    ctx.stroke()
+    // ctx.closePath()
+    // ctx.stroke()
+    /**
+     * 改动结束
+     */
   }
 
   drawMesh(mesh, cameraIndex) {
@@ -49,15 +55,28 @@ class Canvas extends GObject {
     const transform = world.multiply(view).multiply(projection)
 
     // console.log('transform', transform, world, rotation, translation)
+    const ctx = this.ctx
 
     const color = Color.blue()
     indices.forEach(ind => {
       const [v1, v2, v3] = ind.map(i => {
         return this.project(vertices[i], transform).position
       })
+      /**
+       * 改动开始
+       */
+      ctx.beginPath()
+      ctx.moveTo(v1.x, v1.y)
       this.drawline(v1, v2, color)
       this.drawline(v2, v3, color)
-      this.drawline(v1, v3, color)
+      this.drawline(v3, v1, color)
+      ctx.fillStyle = Color.green().toRgba()
+      ctx.closePath()
+      ctx.fill()
+      ctx.stroke()
+      /**
+       * 改动结束
+       */
     })
   }
 }
