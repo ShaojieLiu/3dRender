@@ -36,7 +36,7 @@ class Canvas extends GObject {
     const y = Math.round(v.y)
     const index = x + y * this.w
 
-    if (v.z > this.depthBuffer[index]) {
+    if (v.z > this.depthBuffer[index] + 0.0005) {
       this.depthBuffer[index] = v.z
       this.dataBuffer[index * 4 + 0] = color.r
       this.dataBuffer[index * 4 + 1] = color.g
@@ -54,6 +54,27 @@ class Canvas extends GObject {
     for (let i = 0; i < len; i++) {
       const p = v1.interpolate(v2, i / len)
       this.drawPoint(p, color)
+    }
+  }
+
+  drawTriangle(v1, v2, v3, color) {
+    // 三个顶点根据Y值进行排序
+    const [vUp, vMid, vDown] = [v1, v2, v3].sort((a, b) => a.y - b.y)
+    // vUp和vDown连线被经过vMid的水平线切割的点, 称为vMag
+    const vMag = vUp.interpolate(vDown, (vMid.y - vUp.y) / (vDown.y - vUp.y))
+
+    for (let y = vUp.y; y < vDown.y; y++) {
+      if (y < vMid.y) {
+        // 三角形的上半部分
+        const vUpMid = vUp.interpolate(vMid, (y - vUp.y) / (vMid.y - vUp.y))
+        const vUpMag = vUp.interpolate(vMag, (y - vUp.y) / (vMag.y - vUp.y))
+        this.drawLine(vUpMid, vUpMag, color)
+      } else {
+        // 三角形的下半部分
+        const vDownMid = vDown.interpolate(vMid, (y - vDown.y) / (vMid.y - vDown.y))
+        const vDownMag = vDown.interpolate(vMag, (y - vDown.y) / (vMag.y - vDown.y))
+        this.drawLine(vDownMid, vDownMag, color)
+      }
     }
   }
 
@@ -79,6 +100,7 @@ class Canvas extends GObject {
     const transform = this.getTransform(mesh, cameraIndex)
     const ctx = this.ctx
     const color = Color.blue()
+    const color1 = Color.green()
 
     indices.forEach((ind, i) => {
       const [v1, v2, v3] = ind.map(i => {
@@ -88,8 +110,11 @@ class Canvas extends GObject {
       this.drawLine(v1, v2, color)
       this.drawLine(v2, v3, color)
       this.drawLine(v3, v1, color)
+      this.drawTriangle(v1, v2, v3, color1)
     })
 
     ctx.putImageData(new ImageData(this.dataBuffer, this.w, this.h), 0, 0)
   }
 }
+
+const colorArr = Array.from({length: 12}).map(() => Color.randomColor())
