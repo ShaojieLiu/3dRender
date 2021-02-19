@@ -5,6 +5,13 @@ class Canvas extends GObject {
     this.ctx = canvas.getContext('2d')
     this.w = canvas.width
     this.h = canvas.height
+    // 初始化加多以下两行
+    this.initBuffer()
+  }
+
+  initBuffer() {
+    this.dataBuffer = new Uint8ClampedArray(this.w * this.h * 4)
+    this.depthBuffer = Array.from({ length: this.w * this.h }).map(() => -255535)
   }
 
   clear() {
@@ -24,25 +31,33 @@ class Canvas extends GObject {
     return Vertex.new(v, this.color)
   }
 
-  drawline(v1, v2, color) {
-    /**
-     * 改动开始
-     */
-    // console.log('drawline', v1, v2)
-    const ctx = this.ctx
-    // ctx.beginPath()
-    ctx.strokeStyle = color.toRgba()
-    // ctx.moveTo(v1.x, v1.y)
-    ctx.lineTo(v2.x, v2.y)
-    // ctx.closePath()
-    // ctx.stroke()
-    /**
-     * 改动结束
-     */
+  drawPoint(v, color) {
+    const x = Math.round(v.x)
+    const y = Math.round(v.y)
+    const index = x + y * this.w
+
+    if (v.z > this.depthBuffer[index]) {
+      this.depthBuffer[index] = v.z
+      this.dataBuffer[index * 4 + 0] = color.r
+      this.dataBuffer[index * 4 + 1] = color.g
+      this.dataBuffer[index * 4 + 2] = color.b
+      this.dataBuffer[index * 4 + 3] = color.a
+    }
   }
 
-  drawMesh(mesh, cameraIndex) {
-    const { indices, vertices } = mesh
+  drawLine(v1, v2, color) {
+    const delta = v1.sub(v2)
+    const deltaX = Math.abs(delta.x)
+    const deltaY = Math.abs(delta.y)
+    const len = deltaX > deltaY ? deltaX : deltaY
+
+    for (let i = 0; i < len; i++) {
+      const p = v1.interpolate(v2, i / len)
+      this.drawPoint(p, color)
+    }
+  }
+
+  getTransform(mesh, cameraIndex) {
     const { w, h } = this
 
     let { position, target, up } = Camera.new(cameraIndex || 0)
@@ -54,29 +69,27 @@ class Canvas extends GObject {
     const world = rotation.multiply(translation)
     const transform = world.multiply(view).multiply(projection)
 
-    // console.log('transform', transform, world, rotation, translation)
-    const ctx = this.ctx
+    return transform
+  }
 
+  drawMesh(mesh, cameraIndex) {
+    this.initBuffer()
+
+    const { indices, vertices } = mesh
+    const transform = this.getTransform(mesh, cameraIndex)
+    const ctx = this.ctx
     const color = Color.blue()
-    indices.forEach(ind => {
+
+    indices.forEach((ind, i) => {
       const [v1, v2, v3] = ind.map(i => {
         return this.project(vertices[i], transform).position
       })
-      /**
-       * 改动开始
-       */
-      ctx.beginPath()
-      ctx.moveTo(v1.x, v1.y)
-      this.drawline(v1, v2, color)
-      this.drawline(v2, v3, color)
-      this.drawline(v3, v1, color)
-      ctx.fillStyle = Color.green().toRgba()
-      ctx.closePath()
-      ctx.fill()
-      ctx.stroke()
-      /**
-       * 改动结束
-       */
+
+      this.drawLine(v1, v2, color)
+      this.drawLine(v2, v3, color)
+      this.drawLine(v3, v1, color)
     })
+
+    ctx.putImageData(new ImageData(this.dataBuffer, this.w, this.h), 0, 0)
   }
 }
